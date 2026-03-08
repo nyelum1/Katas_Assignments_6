@@ -31,3 +31,35 @@ def process_chunk(chunk_id, data_chunk):
     
     except Exception as e:
         return {"id": chunk_id, "error": str(e), "success": False}
+    
+
+
+# --- 3. DRIVER ---
+def run_pipeline():
+    chunks = get_dataset()
+    results = []
+    
+    print(f"Starting parallel processing ({NUM_CHUNKS} chunks)...")
+
+    with ProcessPoolExecutor() as executor:
+        # Dispatch tasks
+        futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
+
+        # Track progress as they complete
+        for i, future in enumerate(as_completed(futures), 1):
+            results.append(future.result())
+            print(f"Progress: {i}/{NUM_CHUNKS} chunks processed.")
+
+    # Final Aggregation
+    successful_results = [r['result'] for r in results if r['success']]
+    errors = [r for r in results if not r['success']]
+
+    # Output Summary
+    if errors:
+        print("\n--- Errors Encountered ---")
+        for e in errors:
+            print(f"Chunk {e['id']}: {e['error']}")
+
+    if successful_results:
+        final_mean = np.mean(successful_results)
+        print(f"\n✅ Final Aggregated Result: {final_mean:.4f}")
