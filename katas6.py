@@ -63,3 +63,7 @@ def run_pipeline():
     if successful_results:
         final_mean = np.mean(successful_results)
         print(f"\n✅ Final Aggregated Result: {final_mean:.4f}")
+
+
+if __name__ == "__main__":
+    run_pipeline()
